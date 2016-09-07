@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Learning D3</title>
+	<link rel="stylesheet" href="main.css">
+	<script  type="text/javascript" src="d3.min.js"></script>
+</head>
+<body>
+<!--Place all DOM elements here -->
+<script>
+var data = [{key: 'charged-off rate', date : '2014-01-01', value:0.197674},
+			{key: 'charged-off rate', date : '2014-02-01', value:0.199011},
+			{key: 'charged-off rate', date : '2014-03-01', value:0.236597},
+			{key: 'charged-off rate', date : '2014-04-01', value:0.214831},
+			{key: 'charged-off rate', date : '2014-05-01', value:0.206473},
+			{key: 'charged-off rate', date : '2014-06-01', value:0.213245},
+			{key: 'charged-off rate', date : '2014-07-01', value:0.205303},
+			{key: 'charged-off rate', date : '2014-08-01', value:0.196850},
+			{key: 'charged-off rate', date : '2014-09-01', value:0.205882},
+			{key: 'charged-off rate', date : '2014-10-01', value:0.194602},
+			{key: 'charged-off rate', date : '2014-11-01', value:0.213497},
+			{key: 'charged-off rate', date : '2014-12-01', value:0.211111}];
+
+var w = 800;
+var h = 450;
+var margin = {
+	top: 58,
+	bottom: 100,
+	left: 80,
+	right: 40
+};
+var width = w - margin.left - margin.right;
+var height = h - margin.top - margin.bottom;
+
+var svg = d3.select("body").append("svg")
+			.attr("id", "chart")
+			.attr("width", w)
+			.attr("height", h);
+var chart = svg.append("g")
+			.classed("display", true)
+			.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+var dateParser = d3.time.format("%Y-%m-%d").parse;
+var x = d3.time.scale()
+			.domain(d3.extent(data, function(d){
+				return dateParser(d.date);
+			}))
+			.range([0, width]);
+var y = d3.scale.linear()
+			.domain([0, d3.max(data, function(d){
+				return d.value;
+			})])
+			.range([height, 0]);
+
+var xAxis = d3.svg.axis()
+				.scale(x)
+				.orient("bottom")
+				.ticks(d3.time.months, 1)
+				.tickFormat(d3.time.format("%m-%d"));
+var yAxis = d3.svg.axis()
+				.scale(y)
+				.orient("left")
+				.ticks(10);
+
+var line = d3.svg.line()
+			.x(function(d){
+				var date = dateParser(d.date);
+				return x(date);
+			})
+			.y(function(d){
+				return y(d.value);
+			})
+			.interpolate("monitone");
+var area = d3.svg.area()
+				.x(function(d){
+					var date = dateParser(d.date);
+					return x(date);
+				})
+				.y0(height)
+				.y1(function(d){
+					return y(d.value);
+				})
+				.interpolate("monitone")
+
+function plot(params){
+	this.append("g")
+		.classed("x axis", true)
+		.attr("transform", "translate(0,"+ height +")")
+		.call(params.axis.x);
+	this.append("g")
+		.classed("y axis", true)
+		.attr("transform", "translate(0,0)")
+		.call(params.axis.y);
+	// enter()
+	this.selectAll(".area")
+		.data([params.data])
+		.enter()
+			.append("path")
+			.classed("area", true);
+
+	this.selectAll(".trendline")
+		.data([params.data])
+		.enter()
+			.append("path")
+			.classed("trendline", true);
+
+	this.selectAll(".point")
+		.data(params.data)
+		.enter()
+			.append("circle")
+			.classed("point", true)
+			.attr("r", 2);
+	// update
+	this.selectAll(".area")
+		.attr("d", function(d){
+			return area(d);
+		})
+	this.selectAll(".trendline")
+		.attr("d", function(d){
+			return line(d);
+		})
+	this.selectAll(".point")
+		.attr("cx", function(d){
+			var date = dateParser(d.date);
+			return x(date);
+		})
+		.attr("cy", function(d){
+			return y(d.value);
+		})
+	// exit
+	this.selectAll(".area")
+		.data([params.data])
+		.exit()
+		.remove();
+	this.selectAll(".trendline")
+		.data([params.data])
+		.exit()
+		.remove();
+	this.selectAll(".point")
+		.data(params.data)
+		.exit()
+		.remove();
+};
+
+plot.call(chart, {
+	data: data,
+	axis: {
+		x: xAxis,
+		y: yAxis
+	}
+});
+
+</script>	
+</body>
+</html>
