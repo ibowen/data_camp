@@ -36,13 +36,13 @@ body,html{
 	stroke-width: 4px;
 }
 .area{
-	opacity: 0.25;
+	opacity: 0.1;
 	fill: #ccc;
 	stroke: #ccc;
 	stroke-width: 1px;
 }
 .donut{
-	opacity: 0.1;
+	opacity: 0.2;
 }
 .highlight{
 	opacity: 1;
